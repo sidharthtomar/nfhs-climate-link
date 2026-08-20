@@ -39,3 +39,8 @@ __pycache__/
 
 outputs/**/*.parquet
 outputs/**/*.dta
+
+# Intermediate build artifact (make_pdf.py pandoc->docx->pdf step) -- only
+# REPORT.md and REPORT.pdf are tracked.
+outputs/REPORT.docx
+outputs/*.docx
