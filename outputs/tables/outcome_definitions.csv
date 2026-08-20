@@ -1,0 +1,5 @@
+definition,locally_prepared_counted,exclusive_use_required,weighted_prevalence,n_nonmissing
+any / narrow,False,False,0.6595940229607963,240230
+any / broad,True,False,0.7762701320308364,240230
+exclusive / narrow,False,True,0.4095730662955587,240230
+exclusive / broad,True,True,0.49987948587835446,240230

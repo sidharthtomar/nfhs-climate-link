@@ -3,11 +3,11 @@
 /data/
 
 # Generated outputs (figures, result tables) — not source
-/outputs/
 *.DTA
 *.dta
 *.parquet
-*.csv
+/data/**/*.csv
+/Data/**/*.csv
 *.shp
 *.dbf
 *.shx
@@ -36,3 +36,6 @@ __pycache__/
 # Earth Engine / Google credentials
 *credentials*
 *.json
+
+outputs/**/*.parquet
+outputs/**/*.dta

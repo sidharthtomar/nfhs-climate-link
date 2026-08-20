@@ -1,0 +1,5 @@
+check,observed,expected,passed,source
+n_women_15_24,241180.0,241180.0,True,"Singh & Singh 2025, Front Reprod Health"
+any_hygienic_broad,0.7762701320308364,0.776,True,"Singh & Singh 2025, Table 3 (India total)"
+exclusive_hygienic_broad,0.49987948587835446,0.498,True,"Meher & Sahoo 2023, BMC Women's Health -- 'hygienic' category of their 3-way split; locally-prepared napkins counted hygienic, mixed users excluded"
+sanitary_napkin_use,0.6413748240742682,0.644,True,"Singh & Singh 2025, Table 3 (India total)"
