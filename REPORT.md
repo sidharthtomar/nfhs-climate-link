@@ -1,4 +1,18 @@
-# Heat, socioeconomic status, and menstrual hygiene practice in India: an NFHS-5 predictive-modelling study
+# Predicting Menstrual Hygiene Practice in India: Socioeconomic Inequality, Climate Exposure, and Spatial Generalization
+
+Siddharth Tomar · Independent Researcher, Bengaluru, India · tomarsidharth62@gmail.com
+
+## Abstract
+
+**Background.** Access to hygienic menstrual materials is a standard indicator of women's health in India, and ambient heat has been proposed as a driver of women's reproductive health outcomes. Existing NFHS-based quantitative work has focused on birth outcomes rather than menstrual practice, and the relative contribution of socioeconomic and climatic factors has not been quantified.
+
+**Methods.** We linked individual records from India's National Family Health Survey (NFHS-5, 2019–21; 240,230 women aged 15–24) to two representations of climate: long-run normals from the DHS geospatial covariates, and an interview-windowed acute-heat exposure computed from ERA5-Land reanalysis. We trained logistic-regression and gradient-boosting models to predict exclusive use of hygienic materials, evaluated under both random and district-grouped ("spatial") cross-validation, and decomposed feature contributions by ablation. All outcome construction was validated against published NFHS-5 statistics.
+
+**Results.** The gradient-boosting model reached a spatially-validated AUC of 0.758. Household wealth and the woman's education dominated prediction; long-run climate normals added +0.033 AUC and interview-windowed acute heat added +0.001. Random cross-validation overstated the flexible model's accuracy by 0.018 AUC through district memorization, an inflation absent in the linear model.
+
+**Conclusions.** Menstrual hygiene practice in India is predicted overwhelmingly by socioeconomic status, not climate. We further demonstrate that standard cross-validation overstates model performance on spatially clustered health-survey data, and release an open, validated pipeline and district-level need map.
+
+---
 
 This report summarises the pipeline in this repository: linking NFHS-5 (2019–21) individual-level survey data to DHS geospatial climate covariates and Earth Engine–derived acute heat exposure, then modelling menstrual hygiene practice with an explicit random-vs-spatial cross-validation comparison.
 
