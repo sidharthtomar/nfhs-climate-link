@@ -120,6 +120,8 @@ Districts ranked by weighted hygienic-material-use rate (raw need), with an adju
 
 Every one of the top-15 districts is flagged underperforming. Assam accounts for 4 of the 15; the two Jaintia Hills districts (Meghalaya) and Mon (Nagaland) show the largest adjusted-need gaps, meaning something beyond their SES profile — not captured by wealth, education, or water/sanitation access alone — is holding them back further than poverty would predict on its own.
 
+This need map is presented as a ranked table rather than a choropleth by deliberate choice: openly available district-boundary shapefiles are built on 2011 Census boundaries (641 districts), while NFHS-5 uses the 707 post-2011 districts, so roughly 127 newer districts — including several of the highest-need ones here, such as South Salmara Mancachar and both Jaintia Hills districts — have no corresponding 2011 polygon; mapping would require merging them back into their pre-split parent districts, losing exactly the district-level resolution this ranking depends on.
+
 ---
 
 ## 7. Limitations
