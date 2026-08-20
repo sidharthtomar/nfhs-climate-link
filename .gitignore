@@ -1,0 +1,35 @@
+# Data — NEVER commit (DHS microdata is redistribution-restricted)
+/Data/
+/data/
+*.DTA
+*.dta
+*.parquet
+*.csv
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+*.sbn
+*.sbx
+
+# Archives
+*.zip
+files/
+files2/
+files3/
+
+# Environments & caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.claude/
+.ipynb_checkpoints/
+.DS_Store
+.env
+
+# Earth Engine / Google credentials
+*credentials*
+*.json
