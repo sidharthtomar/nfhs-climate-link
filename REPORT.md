@@ -6,17 +6,17 @@ Siddharth Tomar · Independent Researcher, Bengaluru, India · tomarsidharth62@g
 
 **Background.** Access to hygienic menstrual materials is a standard indicator of women's health in India, and ambient heat has been proposed as a driver of women's reproductive health outcomes. Existing NFHS-based quantitative work has focused on birth outcomes rather than menstrual practice, and the relative contribution of socioeconomic and climatic factors has not been quantified.
 
-**Methods.** We linked individual records from India's National Family Health Survey (NFHS-5, 2019–21; 240,230 women aged 15–24) to two representations of climate: long-run normals from the DHS geospatial covariates, and an interview-windowed acute-heat exposure computed from ERA5-Land reanalysis. We trained logistic-regression and gradient-boosting models to predict exclusive use of hygienic materials, evaluated under both random and district-grouped ("spatial") cross-validation, and decomposed feature contributions by ablation. All outcome construction was validated against published NFHS-5 statistics.
+**Methods.** We linked individual records from India's National Family Health Survey (NFHS-5, 2019–21) to two representations of climate: long-run normals from the DHS geospatial covariates, and an interview-windowed acute-heat exposure computed from ERA5-Land reanalysis. Of 241,180 women aged 15–24 with menstrual-hygiene data, 240,230 with a non-missing outcome form the modelling sample. We trained logistic-regression and gradient-boosting models to predict exclusive use of hygienic materials, evaluated under both random and district-grouped ("spatial") cross-validation, and decomposed feature contributions by ablation. All outcome construction was validated against published NFHS-5 statistics.
 
-**Results.** The gradient-boosting model reached a spatially-validated AUC of 0.758. Household wealth and the woman's education dominated prediction; long-run climate normals added +0.033 AUC and interview-windowed acute heat added +0.001. Random cross-validation overstated the flexible model's accuracy by 0.018 AUC through district memorization, an inflation absent in the linear model.
+**Results.** The gradient-boosting model reached a spatially-validated AUC of 0.758. Household wealth and the woman's education dominated prediction; long-run climate normals added +0.033 AUC and interview-windowed acute heat added +0.001. Random cross-validation overstated the flexible model's accuracy by 0.018 AUC through district-level information leakage, an inflation absent in the linear model.
 
-**Conclusions.** Menstrual hygiene practice in India is predicted overwhelmingly by socioeconomic status, not climate. We further demonstrate that standard cross-validation overstates model performance on spatially clustered health-survey data, and release an open, validated pipeline and district-level need map.
+**Conclusions.** Menstrual hygiene practice in India is predicted overwhelmingly by socioeconomic status, with long-run climate contributing modestly (+0.033 AUC) and interview-windowed acute heat negligibly (+0.001 AUC). We further demonstrate that standard cross-validation overstates model performance on spatially clustered health-survey data, and release an open, validated pipeline and district-level need map.
 
 ---
 
 This report summarises the pipeline in this repository: linking NFHS-5 (2019–21) individual-level survey data to DHS geospatial climate covariates and Earth Engine–derived acute heat exposure, then modelling menstrual hygiene practice with an explicit random-vs-spatial cross-validation comparison.
 
-**This is predictive modelling, not causal inference.** Nothing here estimates the *effect* of heat on hygiene practice. The question answered is narrower and more useful as an engineering artifact: how much of a model's apparent skill is genuine signal versus memorised geography, and which feature blocks carry that signal.
+**This is predictive modelling, not causal inference.** Nothing here estimates the *effect* of heat on hygiene practice. The question answered is narrower and more useful as an engineering artifact: how much of a model's apparent skill is genuine signal versus district-level information leakage, and which feature blocks carry that signal.
 
 ---
 
@@ -67,7 +67,7 @@ Any climate association has to be read against this gradient — wealth and clim
 
 ## 4. Random vs. spatial cross-validation
 
-The central methodological claim of this repository: **random k-fold CV overstates predictive skill on spatially clustered data**, because test-set women live in the same districts as training-set women, so the model partly gets credit for memorising district-level baselines rather than learning transferable signal. District-grouped ("spatial") CV — where every test district is entirely unseen during training — removes that credit.
+The central methodological claim of this repository: **random k-fold CV overstates predictive skill on spatially clustered data**, because test-set women live in the same districts as training-set women, so the model partly gets credit for fitting district-specific structure that does not generalise rather than learning transferable signal. District-grouped ("spatial") CV — where every test district is entirely unseen during training — removes that credit.
 
 | Model | Random-CV AUC | Spatial-CV AUC | Leakage gap |
 |---|---|---|---|
@@ -76,7 +76,7 @@ The central methodological claim of this repository: **random k-fold CV overstat
 
 ![Figure 3](outputs/figures/cv_comparison.png)
 
-The logistic model barely leaks (0.002) — as a linear model with modest capacity, it has little room to memorise district idiosyncrasies. Gradient boosting leaks nearly an order of magnitude more (0.018): its extra flexibility is partly spent fitting district-specific patterns that don't generalise to new districts. **The honest number for gradient boosting is spatial AUC 0.758, not the random-CV 0.776** a less careful evaluation would report.
+The logistic model barely leaks (0.002) — as a linear model with modest capacity, it has little room to fit district-specific structure that does not generalise. Gradient boosting leaks nearly an order of magnitude more (0.018): its extra flexibility is partly spent fitting district-specific patterns that don't generalise to new districts. **The honest number for gradient boosting is spatial AUC 0.758, not the random-CV 0.776** a less careful evaluation would report.
 
 ### Calibration
 
@@ -170,7 +170,7 @@ NFHS-5 microdata is not redistributed in this repository (DHS terms); obtain it 
 
 **Data availability.** All code, figures, and summary tables are at github.com/sidharthtomar/nfhs-climate-link. NFHS microdata are not redistributed per DHS terms and are freely available on registration from The DHS Program (dhsprogram.com). ERA5-Land data are from the Copernicus Climate Data Store.
 
-**Ethics.** This study is a secondary analysis of publicly available, de-identified survey data. The original NFHS-5 protocol received ethical approval from the IIPS and ICF Institutional Review Boards, and informed consent was obtained from all participants at the time of the survey. No further ethical approval was required for this secondary analysis; no attempt was made to re-identify individuals or communities.
+**Ethics.** This study is a secondary analysis of publicly available, de-identified survey data. The original NFHS-5 survey obtained ethical approval and informed consent from all participants at the time of data collection; no additional ethical approval was required for this secondary analysis. No attempt was made to re-identify individuals or communities.
 
 **Funding.** This research received no external funding.
 
