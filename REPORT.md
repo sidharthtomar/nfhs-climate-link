@@ -147,3 +147,17 @@ python scripts/05_figures.py
 ```
 
 NFHS-5 microdata is not redistributed in this repository (DHS terms); obtain it from [The DHS Program](https://dhsprogram.com/data/). All figures and result tables in `outputs/` are generated artifacts and are tracked in this repo; raw and intermediate data are not.
+
+---
+
+## Declarations
+
+**Data availability.** All code, figures, and summary tables are at github.com/sidharthtomar/nfhs-climate-link. NFHS microdata are not redistributed per DHS terms and are freely available on registration from The DHS Program (dhsprogram.com). ERA5-Land data are from the Copernicus Climate Data Store.
+
+**Ethics.** This study is a secondary analysis of publicly available, de-identified survey data. The original NFHS-5 protocol received ethical approval from the IIPS and ICF Institutional Review Boards, and informed consent was obtained from all participants at the time of the survey. No further ethical approval was required for this secondary analysis; no attempt was made to re-identify individuals or communities.
+
+**Funding.** This research received no external funding.
+
+**Competing interests.** The author declares no competing interests.
+
+**Contact.** tomarsidharth62@gmail.com
