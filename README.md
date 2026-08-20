@@ -1,72 +1,58 @@
 # nfhs-climate-link
 
-A reproducible pipeline linking India's National Family Health Survey (NFHS-5, n≈241k women aged 15–24) to gridded climate reanalysis, with a predictive modelling layer and an honest evaluation protocol.
+A reproducible pipeline linking India's National Family Health Survey (NFHS-5, ~241k women aged 15–24) to gridded climate data, with an honestly-evaluated predictive model and a district-level need map.
 
-**Status:** Week 1 of 4 complete — survey ingestion and recode validation.
-
----
-
-## What this is
-
-Two things that are usually done badly, done carefully:
-
-**1. Joining survey microdata to climate rasters.** NFHS is one of the largest health surveys in the world and is widely used, but every team that links it to environmental data rebuilds the join from scratch. This is an open, tested implementation.
-
-**2. Evaluating a geospatial model without fooling yourself.** Random k-fold cross-validation on spatially clustered data leaks: test-set women live in the same districts as training-set women, so the model partly memorises district effects and reports accuracy it does not have. This repo measures the same model under random CV and under district-grouped CV and reports both. The gap is the point.
-
-The substantive question — does ambient heat relate to menstrual hygiene practice, and for whom — is real and under-studied. But the engineering claim is what this repository is for.
+**📄 [Read the full write-up (PDF)](outputs/REPORT.pdf)** · [Report source (Markdown)](REPORT.md)
 
 ---
+
+## What this project found
+
+**Whether a young woman in India uses hygienic menstrual materials is predicted overwhelmingly by household wealth and her own education.** Long-run climate adds a small amount; interview-windowed acute-heat exposure — the most demanding part of the pipeline to build — adds essentially nothing on top. Separately, the project demonstrates a methodological caution: on spatially clustered survey data, standard cross-validation *overstates* a flexible model's accuracy by letting it memorise district baselines, and district-grouped ("spatial") cross-validation is needed to measure real generalisation.
+
+![Random vs spatial cross-validation](outputs/figures/cv_comparison.png)
+
+*Gradient boosting's honest AUC is 0.758, not the 0.776 random CV reports — the 0.018 gap is district memorisation. The linear model barely leaks.*
+
+## Results at a glance
+
+| | |
+|---|---|
+| Honest predictive performance (gradient boosting, spatial CV) | **AUC 0.758** |
+| Spatial leakage (random − spatial AUC), gradient boosting | 0.018 |
+| Spatial leakage, logistic regression | 0.002 |
+| SES-only → +climate normals | 0.724 → 0.757 (**+0.033**) |
+| +acute heat (ERA5-Land) | 0.758 (**+0.001**) |
+| Hygienic-material use, poorest → richest wealth quintile | 19% → 66% |
+
+## Recode validation
+
+Every result rests on a recode that reproduces four independently published NFHS-5 figures, checked before any modelling:
+
+```
+[PASS] n_women_15_24            observed 241,180   expected 241,180
+[PASS] any_hygienic_broad       observed  77.6%    expected  77.6%
+[PASS] exclusive_hygienic_broad observed  50.0%    expected  49.8%
+[PASS] sanitary_napkin_use      observed  64.1%    expected  64.4%
+```
 
 ## The bug this codebase is built around
 
-NFHS records menstrual protection as multiple-response binaries, one per material. Between survey rounds, NFHS-5 inserted *menstrual cup* at position `(e)`, shifting every later response down one letter:
+NFHS records menstrual protection as multiple-response binaries. Between survey rounds, NFHS-5 inserted *menstrual cup* at position `(e)`, shifting every later response down one letter — so a naive positional mapping sends NFHS-4 *"used nothing"* onto NFHS-5 *"used a menstrual cup"*, inverting the outcome for the most deprived respondents. It does not raise; it produces a believable but wrong result. Every mapping here resolves through a canonical label (`config.PROTECTION_ITEMS`), and `tests/test_outcomes.py::test_suffix_trap` locks the failure out of future refactors.
 
-| material | NFHS-4 | NFHS-5 |
-|---|---|---|
-| cloth | `s257a` | `s260a` |
-| locally prepared napkins | `s257b` | `s260b` |
-| sanitary napkins | `s257c` | `s260c` |
-| tampons | `s257d` | `s260d` |
-| menstrual cup | — | `s260e` |
-| **nothing** | **`s257e`** | **`s260f`** |
-| other | `s257x` | `s260x` |
+## Pipeline
 
-Mapping these by suffix — the obvious loop — sends NFHS-4 *"used nothing"* onto NFHS-5 *"used a menstrual cup"*. It inverts the outcome precisely for the most deprived respondents in the sample. It does not raise. It produces a believable prevalence and a believable model.
-
-Two defences, both in the code:
-
-- Every mapping resolves through a canonical label (`config.PROTECTION_ITEMS`); no downstream code touches a suffix.
-- `tests/test_outcomes.py::test_suffix_trap` encodes the failure so a future refactor fails CI.
-
-## The second defence: external validation
-
-Before any modelling, the pipeline reproduces published figures from the raw file:
-
+```bash
+pip install -r requirements.txt
+python scripts/01_build_survey.py --recode data/raw/IAIR7EFL.DTA   # survey frame + benchmark validation
+python scripts/02a_merge_covariates.py                            # DHS climate normals (no GEE)
+earthengine authenticate
+python scripts/02b_gee_heat.py --gps data/raw/IAGE7AFL.shp        # ERA5-Land interview-windowed heat
+python scripts/03_train.py                                        # models + random-vs-spatial CV + ablation
+python scripts/04_district_map.py                                 # district need map (ranked CSV)
+python scripts/05_figures.py                                      # all figures
+python scripts/make_pdf.py                                        # report -> PDF
 ```
-python scripts/01_build_survey.py --recode data/raw/IAIR7EFL.DTA
-```
-
-```
-========================================================================
-RECODE VALIDATION -- published NFHS-5 benchmarks
-========================================================================
-[    ] n_women_15_24            observed ...  expected 241,180
-[    ] any_hygienic_broad       observed ...  expected  77.6%
-[    ] exclusive_hygienic       observed ...  expected  49.8%
-[    ] sanitary_napkin_use      observed ...  expected  64.4%
-========================================================================
-```
-
-Failure raises and blocks the pipeline. A recode that cannot reproduce known numbers is not a recode you should model with.
-
-## Definitional sensitivity
-
-"Menstrual hygiene" has no single operationalisation. Two independent choices — whether locally prepared napkins count as hygienic, and whether *exclusive* use is required — produce four definitions whose published prevalence spans **49.8% to 77.6%**.
-
-That 28-point range is larger than any effect this or any similar study could detect. The pipeline computes all four and reports them together rather than picking one silently.
-
----
 
 ## Layout
 
@@ -75,43 +61,26 @@ src/nfhs_climate/
   config.py            paths, variable maps, published benchmarks
   data/nfhs.py         recode loading, outcome construction
   data/validate.py     benchmark checks (fail-loud)
-  data/climate.py      [week 2] heat index, climatology, district join
-  models/              [week 3] baselines, spatial CV, interpretation
-scripts/
-  01_build_survey.py   ingest + validate  ✅
-  02_build_climate.py  [week 2]
-  03_train.py          [week 3]
-tests/
+  data/covariates.py   DHS climate-normal merge
+  data/climate_gee.py  ERA5-Land heat exposure via Earth Engine
+  models/features.py   modelling matrix (district = group, not feature)
+  models/evaluate.py   random vs spatial cross-validation
+  models/models.py     logistic + gradient boosting
+  models/needmap.py    district need map (raw + model-adjusted)
+scripts/               01-05 pipeline + make_pdf
+outputs/figures/       six result figures (tracked)
+outputs/tables/        result tables + district_need_map.csv (tracked)
+REPORT.md / .pdf       the write-up
 ```
 
-## Setup
+## Data
 
-```bash
-pip install -r requirements.txt
-python scripts/01_build_survey.py --recode data/raw/IAIR7EFL.DTA
-```
+NFHS microdata are **not** redistributed here (DHS terms); obtain them free on registration from [The DHS Program](https://dhsprogram.com/data/). Climate normals are from the DHS Geospatial Covariates; acute heat from [ERA5-Land](https://cds.climate.copernicus.eu/) via Google Earth Engine. All figures and result tables are generated artifacts, tracked in `outputs/`; raw and intermediate data are gitignored.
 
-NFHS microdata is not redistributable. Obtain it from [The DHS Program](https://dhsprogram.com/data/); registration is free. Place the individual recode in `data/raw/`.
+## Scope and honesty
 
-## Roadmap
-
-- [x] **Week 1** — survey ingestion, outcome construction, benchmark validation, tests
-- [ ] **Week 2** — climate pipeline: heat index from temperature and dewpoint, district-specific 1991–2020 percentile thresholds, exposure windows, spatial join
-- [ ] **Week 3** — logistic baseline, gradient boosting, random vs. district-grouped CV, SHAP, calibration
-- [ ] **Week 4** — figures, documentation, write-up
-
-## Scope
-
-NFHS-5 only. Pooling NFHS-4 requires harmonising 707 districts onto 640, which no published source in this literature provides — every existing NFHS-4/NFHS-5 comparison works at state level or maps each round separately. Deliberately out of scope.
-
-This is predictive modelling, not causal inference. Associations here are not effects, and the repository does not claim otherwise.
-
-## Data sources
-
-- NFHS-5 (2019–21), IIPS and ICF, via The DHS Program
-- ERA5-Land reanalysis, Copernicus Climate Data Store
-- Surface PM2.5 estimates, Atmospheric Composition Analysis Group, Washington University
+NFHS-5 only — pooling NFHS-4 needs a 707↔640 district harmonisation no published source in this literature provides. This is **predictive modelling, not causal inference**; associations here are not effects, and the write-up does not claim otherwise. NFHS-6 fact sheets were released in May 2026 but its microdata were not yet public at the time of analysis; the pipeline is built to ingest them on release.
 
 ## Licence
 
-Code MIT. No survey microdata is included or redistributable.
+Code MIT. No survey microdata included or redistributable.
