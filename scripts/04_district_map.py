@@ -21,10 +21,44 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from nfhs_climate.config import DATA_PROCESSED, FIGURES, TABLES  # noqa: E402
+from nfhs_climate.config import DATA_RAW, DATA_PROCESSED, FIGURES, TABLES  # noqa: E402
 from nfhs_climate.models.features import assemble  # noqa: E402
 from nfhs_climate.models.models import estimator_factories  # noqa: E402
-from nfhs_climate.models.needmap import DISTRICT, build_need_map  # noqa: E402
+from nfhs_climate.models.needmap import DISTRICT, STATE, build_need_map  # noqa: E402
+
+
+def _load_value_labels(recode_path: Path) -> tuple[dict, dict]:
+    """Read DHS value labels for state (v024) and district (sdist) from the
+    recode's metadata, without loading any row data."""
+    import pyreadstat
+
+    _, meta = pyreadstat.read_dta(str(recode_path), metadataonly=True)
+    state_labels = meta.variable_value_labels.get(STATE, {})
+    district_labels = meta.variable_value_labels.get(DISTRICT, {})
+    return state_labels, district_labels
+
+
+def _add_names(need: pd.DataFrame, recode_path: Path) -> pd.DataFrame:
+    """Add state_name (always) and district_name (if labelled) columns."""
+    if not recode_path.exists():
+        print(f"Recode {recode_path} not found; skipping state/district names.")
+        return need
+
+    state_labels, district_labels = _load_value_labels(recode_path)
+    out = need.copy()
+
+    if state_labels:
+        out["state_name"] = out["state"].map(state_labels)
+    else:
+        print("No value labels found for v024 (state); state_name not added.")
+
+    if district_labels:
+        out["district_name"] = out[DISTRICT].map(district_labels)
+    else:
+        print(f"No value labels found for {DISTRICT} (district); "
+              "leaving sdist as a code, district_name not added.")
+
+    return out
 
 
 def _oof_predictions(df, outcome):
@@ -83,6 +117,11 @@ def main() -> int:
     ap.add_argument("--data", default=str(DATA_PROCESSED / "analysis_full.parquet"))
     ap.add_argument("--outcome", default="exclusive_hygienic_narrow")
     ap.add_argument("--shapefile", default=None, help="Optional district shapefile for the map")
+    ap.add_argument(
+        "--recode",
+        default=str(DATA_RAW / "IAIR7EFL.DTA"),
+        help="Path to DHS individual recode, used only to read state/district value labels",
+    )
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
@@ -101,6 +140,7 @@ def main() -> int:
     scored = _oof_predictions(df, args.outcome)
 
     need = build_need_map(scored, outcome=args.outcome, predicted_col="predicted_prob")
+    need = _add_names(need, Path(args.recode))
 
     out_csv = TABLES / "district_need_map.csv"
     need.to_csv(out_csv, index=False)
