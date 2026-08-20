@@ -102,7 +102,7 @@ def main() -> int:
     table.to_csv(TABLES / "cv_results.csv", index=False)
     print("\n=== Random vs Spatial CV ===")
     print(table.to_string(index=False))
-    _plot_leakage(table, FIGURES / "leakage_gap.png")
+    # _plot_leakage(table, FIGURES / "leakage_gap.png")  # superseded by 05_figures.py:cv_comparison.png
 
     # --- Ablation: does climate add anything over SES? (spatial CV only) ---
     print("\n=== Feature ablation (spatial CV, gradient boosting) ===")

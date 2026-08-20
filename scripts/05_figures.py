@@ -45,6 +45,49 @@ plt.rcParams.update({"figure.dpi": 150, "font.size": 10, "axes.grid": True,
 
 BLUE, ORANGE, GREEN, GREY = "#2c6fbb", "#e8833a", "#3a9d5d", "#9aa0a6"
 
+_VAR_LABELS = {
+    "v190": "wealth quintile", "v106": "education", "v012": "age",
+    "v025": "urban/rural", "v130": "religion", "s116": "caste",
+    "v501": "marital status", "s259": "age at menarche",
+    "v157": "reads newspaper", "v158": "listens radio", "v159": "watches TV",
+    "v113": "water source", "v116": "toilet type", "s365s": "CHW hygiene talk",
+    "temp_annual_mean": "mean annual temp", "temp_annual_range": "annual temp range",
+    "temp_hot3_mean": "hot-season temp", "temp_hottest_month": "hottest-month temp",
+    "heat_days_12mo": "extreme-heat days (12mo)", "heat_threshold_c": "heat threshold",
+    "Wet_Days_2015": "wet days", "Frost_Days_2015": "frost days",
+    "Elevation": "elevation", "Aridity_2015": "aridity",
+    "Night_Land_Surface_Temp_2015": "night land-surface temp",
+    "Day_Land_Surface_Temp_2015": "day land-surface temp",
+    "Land_Surface_Temperature_2015": "land-surface temp",
+    "Precipitation_2015": "precipitation", "PET_2015": "potential evapotranspiration",
+    "Diurnal_Temperature_Range_2015": "diurnal temp range",
+    "Enhanced_Vegetation_Index_2015": "vegetation index",
+    "Nightlights_Composite": "nightlights",
+    "Maximum_Temperature_2015": "max temp", "Mean_Temperature_2015": "mean temp",
+    "Minimum_Temperature_2015": "min temp", "Travel_Times": "travel time to city",
+}
+_LEVEL_LABELS = {
+    "v190": {"1.0": "poorest", "2.0": "poorer", "3.0": "middle", "4.0": "richer", "5.0": "richest"},
+    "v106": {"0.0": "none", "1.0": "primary", "2.0": "secondary", "3.0": "higher"},
+    "v025": {"1.0": "urban", "2.0": "rural"},
+}
+
+
+def _pretty(name: str) -> str:
+    s = name.replace("num__", "").replace("cat__", "")
+    if s in _VAR_LABELS:
+        return _VAR_LABELS[s]
+    base, level = s, None
+    if "_" in s:
+        head, tail = s.rsplit("_", 1)
+        if tail.replace(".", "").isdigit():
+            base, level = head, tail
+    label = _VAR_LABELS.get(base, base)
+    if level is not None:
+        lvl = _LEVEL_LABELS.get(base, {}).get(level)
+        return f"{label}: {lvl}" if lvl else f"{label} ({level})"
+    return label
+
 
 def fig_cv_comparison():
     t = pd.read_csv(TABLES / "cv_results.csv")
@@ -115,8 +158,7 @@ def fig_shap(df, outcome, n_sample=4000):
     fig, ax = plt.subplots(figsize=(6.5, 5))
     ax.barh(range(len(order)), imp[order], color=BLUE)
     ax.set_yticks(range(len(order)))
-    ax.set_yticklabels([names[i].replace("num__", "").replace("cat__", "")
-                        for i in order], fontsize=8)
+    ax.set_yticklabels([_pretty(names[i]) for i in order], fontsize=8)
     ax.set_xlabel("mean |SHAP value|")
     ax.set_title("What drives the prediction\n(top 15 features, gradient boosting)")
     fig.tight_layout(); fig.savefig(FIGURES / "shap_importance.png"); plt.close(fig)
@@ -130,7 +172,8 @@ def _fig_perm_importance(est, X, y):
     order = np.argsort(r.importances_mean)[-15:]
     fig, ax = plt.subplots(figsize=(6.5, 5))
     ax.barh(range(len(order)), r.importances_mean[order], color=BLUE)
-    ax.set_yticks(range(len(order))); ax.set_yticklabels(X.columns[order], fontsize=8)
+    ax.set_yticks(range(len(order)))
+    ax.set_yticklabels([_pretty(c) for c in X.columns[order]], fontsize=8)
     ax.set_xlabel("permutation importance")
     ax.set_title("What drives the prediction (top 15)")
     fig.tight_layout(); fig.savefig(FIGURES / "shap_importance.png"); plt.close(fig)
