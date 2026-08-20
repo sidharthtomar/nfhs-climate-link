@@ -128,7 +128,7 @@ Every one of the top-15 districts is flagged underperforming. Assam accounts for
 2. **Cross-sectional design.** NFHS-5 is a single interview wave; temporality between any exposure and the outcome cannot be established.
 3. **Ecological climate features.** DHS geospatial covariates and the acute heat-day count are cluster/location-level, not measures of an individual woman's personal exposure (occupational, indoor, commuting exposure are unmeasured).
 4. **Outcome definition sensitivity.** The primary outcome (exclusive/narrow) is one of four defensible definitions spanning a 28-point prevalence range (Section 2); results should be read as conditional on this choice.
-5. **Acute heat coverage gap.** 5 of 60 Earth Engine batches (≈2,591 of 29,899 clusters) timed out and were skipped rather than retried, giving 90.9% rather than 100% heat-exposure coverage. This is a missing-data mechanism (server timeout) uncorrelated with any covariate of interest, so it should not bias the ablation result, but it is not re-verified here.
+5. **Acute heat coverage gap.** 5 of 60 Earth Engine batches (≈2,591 of 29,899 clusters) timed out and were skipped rather than retried, giving 90.9% rather than 100% heat-exposure coverage. The skipped clusters are disproportionately coastal or remote, so this missingness is spatially structured rather than random; missing acute-heat values were median-imputed within cross-validation folds. Because the acute-heat block contributes negligibly to predictive performance (+0.1 pts AUC), the imputation choice has no material effect on the results.
 6. **Self-reported outcome.** Menstrual material use is self-reported in interview, with the usual caveats about social-desirability and recall.
 
 ---
