@@ -177,3 +177,11 @@ NFHS-5 microdata is not redistributed in this repository (DHS terms); obtain it 
 **Competing interests.** The author declares no competing interests.
 
 **Contact.** tomarsidharth62@gmail.com
+
+---
+
+## References
+
+Meher T, Sahoo H. Dynamics of usage of menstrual hygiene and unhygienic methods among young women in India: a spatial analysis. *BMC Women's Health*. 2023;23(1):573. doi:10.1186/s12905-023-02710-8.
+
+Singh SK, Singh B. Exploring the temporal shift in menstrual hygiene practices among young women across India. *Frontiers in Reproductive Health*. 2025. doi:10.3389/frph.2025.1532178.
