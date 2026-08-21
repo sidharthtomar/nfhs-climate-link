@@ -1,5 +1,10 @@
 # nfhs-climate-link
 
+[![Paper DOI](https://img.shields.io/badge/Paper-10.5281%2Fzenodo.22051189-blue)](https://doi.org/10.5281/zenodo.22051189)
+[![Code DOI](https://img.shields.io/badge/Code-10.5281%2Fzenodo.22051287-blue)](https://doi.org/10.5281/zenodo.22051287)
+
+**Paper:** Tomar, S. (2026). *Predicting Menstrual Hygiene Practice in India: Socioeconomic Inequality, Climate Exposure, and Spatial Generalization.* Zenodo. https://doi.org/10.5281/zenodo.22051189
+
 A reproducible pipeline linking India's National Family Health Survey (NFHS-5, ~241k women aged 15–24) to gridded climate data, with an honestly-evaluated predictive model and a district-level need map.
 
 **📄 [Read the full write-up (PDF)](outputs/REPORT.pdf)** · [Report source (Markdown)](REPORT.md)
